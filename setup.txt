@@ -1,0 +1,22 @@
+import sys
+from cx_Freeze import setup, Executable
+base = None
+
+if (sys.platform == "win32"):
+    base = "Win32GUI"
+executables = executables = [Executable("tombola.py", base=base
+,icon = "C:\\Users\\pierre-e.dumont\\OneDrive - JUNIA Grande école d'ingénieurs\\INTEMPOREL\\INFO_A_GARDER\\tombola\\generation_exe\\icone.ico")]
+
+packages = ["tkinter","math", "random", "os" ,"time" , "smtplib","re", "yagmail"]
+options = {
+    'build_exe': {
+        'packages':packages,
+    },
+}
+setup(
+    name = "TOMBOLA",
+    options = options,
+    version = "1",
+    description = 'TOMBOLA ISEN ©HDemenez',
+    executables = executables
+)
