@@ -107,30 +107,27 @@ def Retour():
         etat=etatbeforeoption
 def Valider():
     global etat, nbcase , prix , nom , prenom , mail, txtprenom , txtnom, txtmail , nbticket, txtquantite, txtnomlot, registreattente,reg,mailorganisateur,mdporganisateur
-    if etat=='Menu2':
-        if txtnbcase.get()!='' and txtprix.get()!='':
-            nbcase=int(txtnbcase.get())
-            prix=int(txtprix.get())
-            etat='Menu3'
-    if etat=='Menu3':
-        if txtquantite.get()!='' and txtnomlot.get()!='':
-            Enregistrerlot()
-            Lecturedeslots()
-            Enregistrertombola()
-    if etat=='Menu4':
-        if txtnom.get()!='' and txtprenom.get()!='':
-            nom=txtnom.get()
-            prenom=txtprenom.get()
-            mail=txtmail.get()
-            Enregistrement()
-            txtnom.set('')
-            txtprenom.set('')
-            txtmail.set('')
-            nbticket=0
-            for i in registreattente:
-                reg.append(i)
-            registreattente=[]
-            Enregistrertombola()
+    if etat == 'Menu2' and txtnbcase.get() != '' and txtprix.get() != '':
+        nbcase=int(txtnbcase.get())
+        prix=int(txtprix.get())
+        etat='Menu3'
+    if etat == 'Menu3' and txtquantite.get() != '' and txtnomlot.get() != '':
+        Enregistrerlot()
+        Lecturedeslots()
+        Enregistrertombola()
+    if etat == 'Menu4' and txtnom.get() != '' and txtprenom.get() != '':
+        nom=txtnom.get()
+        prenom=txtprenom.get()
+        mail=txtmail.get()
+        Enregistrement()
+        txtnom.set('')
+        txtprenom.set('')
+        txtmail.set('')
+        nbticket=0
+        for i in registreattente:
+            reg.append(i)
+        registreattente=[]
+        Enregistrertombola()
     if etat=='MenuConfirmation':
             SupprimerTombola()
             Creer()
@@ -150,7 +147,7 @@ def Valider():
 def fcncocher():
     global cochage, nbticket, txtcase, reg, regcompte,colorerror
     regcompte=int(txtcase.get())
-    if (regcompte in reg) == False: #Verifie que l'on n'a pas deja coché la case
+    if regcompte not in reg: #Verifie que l'on n'a pas deja coché la case
         reg.append(int(txtcase.get()))
         nbticket+=1
         txtcase.set('')
@@ -208,29 +205,26 @@ def commandboutoneffectuertirage():
 
 def envoiemail():
     global colorok
-    i=0
     print(listelot)
     print(listecase)
     print(listemail)
     mail_a_envoyer={}
     mail_pas_de_cadeau=[]
-    for destinataire in listemail:
+    for i, destinataire in enumerate(listemail):
         if destinataire !=None and i<len(listelot):
-            if destinataire in mail_a_envoyer.keys():
+            if destinataire in mail_a_envoyer:
                 mail_a_envoyer[destinataire]+= '\n    1 ' + listelot[i] +' (grâce à la case numéro '+ listecase[i]+')'
             else:
                 mail_a_envoyer[destinataire]='Madame, Monsieur\n\nNous sommes ravis de vous annoncer que vous avez gagné à la tombola:\n    1 '+ listelot[i] +' (grâce à la case numéro '+ listecase[i]+')'
-        i+=1
     print(mail_a_envoyer)
     yag_smtp_connection = yagmail.SMTP( user=mailorganisateur, password=mdporganisateur, host='smtp.gmail.com')
-        # email SUJET
     subject = 'APEL Ecole Jeanne d''Arc : Tombola'
     for cle, valeur in mail_a_envoyer.items():        
         # email CONTENU
         # ENVOIE de email
         contenu=valeur+"\n\n Vous pouvez venir retirer votre lot (quand il n'y aura pas trop de monde!).\nEn vous remerciant d'avoir joué.\nCordialement,\n\nL'APEL de l'école Jeanne d'Arc"
         yag_smtp_connection.send(cle, subject, [contenu])
-    
+
     for i in range (len(listelot),len(listemail)):
         if ((listemail[i] !=None) and (listemail[i] not in mail_a_envoyer.keys()) and (listemail[i] not in mail_pas_de_cadeau)):
                 mail_pas_de_cadeau.append(listemail[i])
@@ -513,10 +507,7 @@ def Lecturedeslots():
         txtquantite.set('')
 
 def suppassageligne(L):                                     # enlève les \n d'une liste pour ne pas sauter une           
-    l=[]                                                    # ligne 
-    for i in L:
-        l.append(i.replace('\n',''))
-    return(l)
+    return [i.replace('\n','') for i in L]
 
 def Affichage():
     if etat=='Menu' :
@@ -606,23 +597,32 @@ def SupprimerTombola ():
 def Tirageautomatique():
     L_finale=[]
     associerlisteinfo()
-    random.shuffle(listeinfo)    
-    associerlistenom()   
-    associerlistelot()   
-    random.shuffle(listelot)  
-    associerlistemail() 
+    random.shuffle(listeinfo)
+    associerlistenom()
+    associerlistelot()
+    random.shuffle(listelot)
+    associerlistemail()
     associerlistecase()                                      #on associe un lot par personne
-    if (len(listenom)) > (len(listelot)) :
-        for i in range(len(listelot)):
-            L_finale.append(listenom[i]+' a gagne '+listelot[i]+' grâce à la case numéro: '+ listecase[i]+'\n')
+    if (len(listenom)) > (len(listelot)):
+        L_finale.extend(
+            f'{listenom[i]} a gagne {listelot[i]} grâce à la case numéro: '
+            + listecase[i]
+            + '\n'
+            for i in range(len(listelot))
+        )
+
     else:
-        for i in range(len(listenom)):
-            L_finale.append(listenom[i]+' a gagne '+listelot[i]+' grâce à la case numéro: '+ listecase[i]+'\n') 
-    L_finale.sort()        
-    for result in L_finale:                                           #on écrit le nom des personnes et leur lot dans
-        fichier = open("TIPE/resultats.txt", "a")  #un fichier texte
-        fichier.write(result)
-        fichier.close()
+        L_finale.extend(
+            f'{listenom[i]} a gagne {listelot[i]} grâce à la case numéro: '
+            + listecase[i]
+            + '\n'
+            for i in range(len(listenom))
+        )
+
+    L_finale.sort()
+    for result in L_finale:                                       #on écrit le nom des personnes et leur lot dans
+        with open("TIPE/resultats.txt", "a") as fichier:
+            fichier.write(result)
 
 def retirersautligne(ligne):
     ligne=suppassageligne(ligne)
@@ -671,39 +671,32 @@ def chargetombola():
 
 def associerlistenom():
     global listenom
-    listenom=[]
-    for i in listeinfo:
-        listenom.append(cherchernoms(i))
+    listenom = [cherchernoms(i) for i in listeinfo]
 
 def trouvercase(str): 
-    array = re.findall(r'[0-9]+', str) 
-    return array 
+    return re.findall(r'[0-9]+', str) 
 
 def associerlisteinfo():
     global listeinfo, listecase
-    listeinfo=[]
-    listecase=[]
-    lenumero=[]
-    lesnumero=[]
     fichier = open("TIPE/informations.txt", "r")        #lit tous les noms et prénoms dans le fichier
     ligne = fichier.readline()                                     # texte et les ajoute dans une liste
-    fichier.close                                
+    fichier.close
+    listeinfo = []
+    listecase = []
     while ligne:
-        if cherchernoms(ligne)!=None:
-            listeinfo.append (ligne)
-            ligne = fichier.readline()
-        else :
+        if cherchernoms(ligne) is None:
             listecase.append(ligne)
-            ligne = fichier.readline()
+        else:
+            listeinfo.append (ligne)
+        ligne = fichier.readline()
     listeinfo=suppassageligne(listeinfo)
     listecase=suppassageligne(listecase)
-    for i in listecase:
-        lesnumero.append(trouvercase(i))
+    lesnumero = [trouvercase(i) for i in listecase]
+    lenumero = []
     for listenum in lesnumero:
-        for i in listenum:
-            lenumero.append(i)
+        lenumero.extend(iter(listenum))
     for i in range (len(listeinfo)):
-        listeinfo[i]+=' '+lenumero[i]
+        listeinfo[i] += f' {lenumero[i]}'
         
 def associerlistelot():
     global listelot
@@ -719,17 +712,17 @@ def associerlistelot():
 def Enregistrement():
     fichier = open("TIPE/informations.txt", "a")       #écrit les noms dans un fichier texte
     for numerocase in registreattente:
-        fichier.write(str(numerocase)+' ')
+        fichier.write(f'{str(numerocase)} ')
     fichier.write('\n')
-    for i in range (nbticket):
-        fichier.write(txtnom.get()+ ' ')
-        fichier.write(txtprenom.get() + ' ')
+    for _ in range (nbticket):
+        fichier.write(f'{txtnom.get()} ')
+        fichier.write(f'{txtprenom.get()} ')
         fichier.write(txtmail.get()+'\n')
         fichier.close
 
 def Enregistrerlot():
     fichier = open("TIPE/lot.txt", "a")       #écrit les lots dans un fichier texte
-    for i in range (int(txtquantite.get())):
+    for _ in range (int(txtquantite.get())):
         fichier.write(txtnomlot.get()+'\n')
     fichier.close
 
@@ -794,15 +787,11 @@ def cherchernoms(expression):
 
 def associerlistemail():
     global listemail
-    listemail=[]
-    for i in listeinfo:
-        listemail.append(cherchermail(i))
+    listemail = [cherchermail(i) for i in listeinfo]
 
 def associerlistecase():
     global listecase
-    listecase=[]
-    for i in listeinfo:
-        listecase.append(trouvercase(i)[0])
+    listecase = [trouvercase(i)[0] for i in listeinfo]
 
 canvas.bind('<Button-1>',Clic)
 canvas.focus_set()
