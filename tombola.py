@@ -399,7 +399,6 @@ def AffichageMenu3():
     EntreOptioncodevalidation.place_forget()
     
 def AffichageMenu4():
-    global carre
     carre=math.ceil(math.sqrt(nbcase))
     Grille(carre)
     nom=canvas.create_text(L*(8/10),H*(4/16),text='Nom', font=(policeecriture,int(30*fontsize)))
