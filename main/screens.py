@@ -28,8 +28,8 @@ class MainScreen:
         self.Window.title("TOMBOLA")
         self.Window.resizable(width=True, height=True)
         self.Window.state("zoomed")
-        self.self.canvas = tk.self.canvas(self.Window, width= self.LENGTH, height= self.HEIGHT, bg=self.BACKGROUND)
-        self.self.canvas.pack()
+        self.canvas = tk.canvas(self.Window, width= self.LENGTH, height= self.HEIGHT, bg=self.BACKGROUND)
+        self.canvas.pack()
         self.state='Menu'
         self.kL=L/1536
         self.kH=H/864
@@ -126,7 +126,7 @@ class MainScreen:
             self.state='Menu4'
 
     def Quitter(self):
-        self.self.canvas.destroy()
+        self.canvas.destroy()
         self.Fenetre.destroy()
         
     def Retour(self):
